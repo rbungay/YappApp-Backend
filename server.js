@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(logger("dev"));
 
 app.use("/users", usersRouter);
-app.use("/profiles", profilesRouter);
+app.use("/profile", profilesRouter);
 
 db.on("connected", () => {
   console.clear();
