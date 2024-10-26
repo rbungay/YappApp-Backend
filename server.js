@@ -5,6 +5,7 @@ import chalk from "chalk";
 import cors from "cors";
 import usersRouter from "./routes/users.js";
 import profilesRouter from "./routes/profiles.js";
+import postsRouter from "./routes/posts.js";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -17,7 +18,8 @@ app.use(express.json());
 app.use(logger("dev"));
 
 app.use("/users", usersRouter);
-app.use("/profile", profilesRouter);
+app.use("/profiles", profilesRouter);
+app.use("/posts", postsRouter);
 
 db.on("connected", () => {
   console.clear();
