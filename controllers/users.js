@@ -6,7 +6,7 @@ import User from "../models/user.js";
 const router = express.Router();
 const SALT_LENGTH = 12;
 
-router.post("/signup", async (req, res) => {
+export const signUp = async (req, res) => {
   try {
     // Check if the username is already taken
     const userInDatabase = await User.findOne({ username: req.body.username });
@@ -26,9 +26,9 @@ router.post("/signup", async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
-});
+};
 
-router.post("/signin", async (req, res) => {
+export const signIn = async (req, res) => {
   try {
     const user = await User.findOne({ username: req.body.username });
     if (user && bcrypt.compareSync(req.body.password, user.hashedPassword)) {
@@ -43,6 +43,4 @@ router.post("/signin", async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
-});
-
-export default router;
+};
