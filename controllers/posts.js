@@ -1,4 +1,7 @@
 import Post from "../models/post.js";
+import Prompt from "../models/prompt.js";
+import Comment from "../models/comment.js";
+import Vote from "../models/vote.js";
 
 export const getPosts = async (req, res) => {
   try {
@@ -46,7 +49,7 @@ export const getPostsByPrompt = async (req, res) => {
 
 export const getPostById = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id)
+    const post = await Post.findById(req.params.postId)
       .populate("owner")
       .populate({
         path: "comments",
@@ -75,9 +78,13 @@ export const createPost = async (req, res) => {
 
 export const updatePost = async (req, res) => {
   try {
-    const updatedPost = await Post.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    const updatedPost = await Post.findByIdAndUpdate(
+      req.params.postId,
+      req.body,
+      {
+        new: true,
+      }
+    );
     if (!updatedPost) {
       return res.status(404).json({ message: "Post not found" });
     }
@@ -92,7 +99,7 @@ export const deletePost = async (req, res) => {
     // Going to delete all comments associated with the post.
     await Comment.deleteMany({ postID: req.params.id });
 
-    const deletedPost = await Post.findByIdAndDelete(req.params.id);
+    const deletedPost = await Post.findByIdAndDelete(req.params.postId);
     if (!deletedPost) {
       return res.status(404).json({ message: "Post not found" });
     }
