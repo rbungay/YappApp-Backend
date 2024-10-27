@@ -8,6 +8,7 @@ import Comment from "../models/comment.js";
 const insertData = async () => {
   // Drop the database
   await db.dropDatabase();
+  console.log("Database has been dropped.");
 
   // Create Users and store them in a variable
   const users = await User.create(
