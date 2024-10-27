@@ -14,16 +14,26 @@ const postSchema = new Schema(
     },
     text: {
       type: String,
-      req: true,
+      required: true,
     },
-    countUp: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "Vote",
-    },
-    countDown: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "Vote",
-    },
+    comments: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Comment",
+      },
+    ],
+    countUp: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Vote",
+      },
+    ],
+    countDown: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Vote",
+      },
+    ],
   },
   { timestamps: true }
 );

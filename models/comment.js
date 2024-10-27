@@ -8,12 +8,14 @@ const commentSchema = new Schema(
       ref: "User",
       required: true,
     },
-    postID: {
+    post: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Post",
+      required: true,
     },
     text: {
       type: String,
+      required: true,
     },
   },
   { timestamps: true }

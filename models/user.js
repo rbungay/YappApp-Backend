@@ -4,11 +4,30 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
     unique: true,
-    required: true,
+    required: function () {
+      return !this.googleId && !this.githubId;
+    },
   },
   hashedPassword: {
     type: String,
-    required: true,
+    required: function () {
+      return !this.googleId && !this.githubId;
+    },
+  },
+  email: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+  githubId: {
+    type: String,
+    unique: true,
+    sparse: true,
   },
 });
 
