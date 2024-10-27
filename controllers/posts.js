@@ -1,7 +1,5 @@
 import Post from "../models/post.js";
-import Prompt from "../models/prompt.js";
 import Comment from "../models/comment.js";
-import Vote from "../models/vote.js";
 
 export const getPosts = async (req, res) => {
   try {
