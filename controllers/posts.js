@@ -1,13 +1,34 @@
 import Post from "../models/post.js";
 import Comment from "../models/comment.js";
+import Vote from "../models/vote.js"
+
+// export const getPosts = async (req, res) => {
+//   try {
+//     const posts = await Post.find({})
+//       .populate("owner")
+//       .populate("prompt")
+//       // .populate("countUp")
+//       // .populate("countDown")
+//       .populate({
+//         path: "comments",
+//         populate: { path: "owner", select: "username" },
+//       });
+
+//     if (!posts.length) {
+//       return res.status(404).json({ message: "No posts at the moment" });
+//     }
+
+//     res.status(200).json(posts);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 
 export const getPosts = async (req, res) => {
   try {
     const posts = await Post.find({})
       .populate("owner")
       .populate("prompt")
-      .populate("countUp")
-      .populate("countDown")
       .populate({
         path: "comments",
         populate: { path: "owner", select: "username" },
@@ -17,7 +38,34 @@ export const getPosts = async (req, res) => {
       return res.status(404).json({ message: "No posts at the moment" });
     }
 
-    res.status(200).json(posts);
+    // Fetch vote counts for each post
+    const postsWithVotes = await Promise.all(posts.map(async post => {
+      const results = await Vote.aggregate([
+        { $match: { post: post._id } },
+        {
+          $group: {
+            _id: "$type",
+            count: { $sum: 1 }
+          }
+        }
+      ]);
+
+      const voteCounts = { upvotes: 0, downvotes: 0 };
+      results.forEach(result => {
+        if (result._id === 'upvote') {
+          voteCounts.upvotes = result.count;
+        } else if (result._id === 'downvote') {
+          voteCounts.downvotes = result.count;
+        }
+      });
+
+      return {
+        ...post.toObject(),
+        voteCounts
+      };
+    }));
+
+    res.status(200).json(postsWithVotes);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -104,5 +152,28 @@ export const deletePost = async (req, res) => {
     res.status(204).send(); // No content to return
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+export const castVote = async (req, res) => {
+  const { voteType } = req.body;
+  const { _id: userId} = req.user
+  const { postId } = req.params
+
+  try {
+    let vote = await Vote.findOne({ post: postId, user: userId });
+
+    if (vote) {
+      // Update existing vote
+      vote.type = voteType;
+    } else {
+      // Create new vote
+      vote = new Vote({ user: userId, post: postId, type: voteType });
+    }
+
+    await vote.save();
+    res.status(200).json({ message: 'Vote registered successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error processing vote' });
   }
 };

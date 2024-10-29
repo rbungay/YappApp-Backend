@@ -7,6 +7,7 @@ import usersRouter from "./routes/users.js";
 import profilesRouter from "./routes/profiles.js";
 import postsRouter from "./routes/posts.js";
 import commentsRouter from "./routes/comments.js";
+import promptsRouter from "./routes/prompts.js"
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -22,6 +23,7 @@ app.use("/users", usersRouter);
 app.use("/profiles", profilesRouter);
 app.use("/posts", postsRouter);
 app.use("/comments", commentsRouter);
+app.use("/prompts", promptsRouter);
 
 db.on("connected", () => {
   console.clear();
