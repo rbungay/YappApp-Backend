@@ -2,20 +2,13 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const voteSchema = new Schema({
-  postId: {
+  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  post: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Post",
     required: true,
   },
-  upVotes: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref: "User",
-  },
-
-  downVotes: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref: "User",
-  },
+  type: { type: String, enum: ['upvote', 'downvote'], required: true }
 });
 
 export default mongoose.model("Vote", voteSchema);

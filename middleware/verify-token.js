@@ -6,6 +6,7 @@ export const verifyToken = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     // Assign decoded payload to req.user
     req.user = decoded;
+    console.log("middlewar")
     // Call next() to invoke the next middleware function
     next();
   } catch (error) {

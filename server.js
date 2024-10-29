@@ -7,6 +7,7 @@ import usersRouter from "./routes/users.js";
 import profilesRouter from "./routes/profiles.js";
 import postsRouter from "./routes/posts.js";
 import commentsRouter from "./routes/comments.js";
+import promptsRouter from "./routes/prompts.js";
 import authsRouter from "./routes/auths.js";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
@@ -71,6 +72,7 @@ app.use("/profiles", profilesRouter);
 app.use("/posts", postsRouter);
 app.use("/comments", commentsRouter);
 app.use("/auth", authsRouter);
+app.use("/prompts", promptsRouter);
 
 db.on("connected", () => {
   console.clear();
