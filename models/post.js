@@ -21,21 +21,13 @@ const postSchema = new Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "Comment",
       },
-    ],
-    countUp: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Vote",
-      },
-    ],
-    countDown: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Vote",
-      },
-    ],
+    ]
   },
-  { timestamps: true }
+  { timestamps: true },
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+  }
 );
 
 export default mongoose.model("Post", postSchema);
