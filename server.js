@@ -10,6 +10,8 @@ import commentsRouter from "./routes/comments.js";
 import authsRouter from "./routes/auths.js";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import jwt from "jsonwebtoken";
+import User from "./models/user.js";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -22,17 +24,45 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/auth/google/callback",
+      callbackURL: "http://localhost:3000/auth/google/callback",
     },
-    (profile, done) => {
-      const user = { id: profile.id, email: profile.emails[0].value };
-      return done(null, user);
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        // Find or create the user in your database
+        let user = await User.findOne({ googleId: profile.id });
+
+        if (!user) {
+          // If user doesn't exist, create a new one
+          user = new User({
+            googleId: profile.id,
+            email: profile.emails[0].value,
+            username:
+              profile.displayName || profile.emails[0].value.split("@")[0],
+          });
+          await user.save();
+        }
+
+        // Generate JWT token
+        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+          expiresIn: "1h", // Token expiration time
+        });
+
+        return done(null, token);
+      } catch (error) {
+        console.error("Error during user authentication:", error);
+        return done(error, null);
+      }
     }
   )
 );
 
 app.use(passport.initialize());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(logger("dev"));
 
