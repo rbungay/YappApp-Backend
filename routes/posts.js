@@ -5,6 +5,7 @@ import { verifyToken } from "../middleware/verify-token.js";
 const router = Router();
 
 router.put("/:postId/vote", verifyToken, controllers.castVote); // New Route to cast vote
+router.get("/:postId/vote", verifyToken, controllers.getVote); // New Route to get vote
 
 router.get("/", controllers.getPosts);
 router.get("/prompt/:promptId", controllers.getPostsByPrompt);
