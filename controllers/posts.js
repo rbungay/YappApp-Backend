@@ -87,7 +87,34 @@ export const getPostsByPrompt = async (req, res) => {
         .json({ message: "No posts found for this prompt." });
     }
 
-    res.status(200).json(posts);
+    // Fetch vote counts for each post
+    const postsWithVotes = await Promise.all(posts.map(async post => {
+      const results = await Vote.aggregate([
+        { $match: { post: post._id } },
+        {
+          $group: {
+            _id: "$type",
+            count: { $sum: 1 }
+          }
+        }
+      ]);
+
+      const voteCounts = { upvotes: 0, downvotes: 0 };
+      results.forEach(result => {
+        if (result._id === 'upvote') {
+          voteCounts.upvotes = result.count;
+        } else if (result._id === 'downvote') {
+          voteCounts.downvotes = result.count;
+        }
+      });
+
+      return {
+        ...post.toObject(),
+        voteCounts
+      };
+    }));
+
+    res.status(200).json(postsWithVotes);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -105,7 +132,31 @@ export const getPostById = async (req, res) => {
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
-    res.status(200).json(post);
+
+    // Fetch vote counts for the specific post
+    const results = await Vote.aggregate([
+      { $match: { post: post._id } },
+      {
+        $group: {
+          _id: "$type",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const voteCounts = { upvotes: 0, downvotes: 0 };
+    results.forEach(result => {
+      if (result._id === 'upvote') {
+        voteCounts.upvotes = result.count;
+      } else if (result._id === 'downvote') {
+        voteCounts.downvotes = result.count;
+      }
+    });
+
+    res.status(200).json({
+      ...post.toObject(),
+      voteCounts
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -177,3 +228,15 @@ export const castVote = async (req, res) => {
     res.status(500).json({ message: 'Error processing vote' });
   }
 };
+
+export const getVote = async (req, res) => {
+  const { postId } = req.params
+  const { _id: userId} = req.user
+
+  try {
+    let vote = await Vote.findOne({ post: postId, user: userId });
+    res.status(200).json(vote);
+  } catch (error) {
+    res.status(500).json({ message: 'Error accessing vote' });
+  }
+}
