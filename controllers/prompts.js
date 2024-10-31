@@ -27,7 +27,6 @@ export const getTodayPrompt = async (req, res) => {
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1); // Start of tomorrow
 
-    // Find prompts where the date is today
     const prompt = await Prompt.findOne({
       date: { $gte: today, $lt: tomorrow },
     });
@@ -45,9 +44,8 @@ export const getTodayPrompt = async (req, res) => {
 export const getPreviousPrompts = async (req, res) => {
   try {
     const today = new Date();
-    today.setHours(0, 0, 0); // Start of today
+    today.setHours(0, 0, 0);
 
-    // Find prompts where the date is less than today
     const previousPrompts = await Prompt.find({ date: { $lt: today } });
 
     if (previousPrompts.length === 0) {
