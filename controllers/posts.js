@@ -85,12 +85,37 @@ export const getPostsByPrompt = async (req, res) => {
       });
 
     if (!posts.length) {
-      return res
-        .status(404)
-        .json({ message: "No posts found for this prompt." });
+      return res.status(404).json({ message: "No posts found for this prompt." });
     }
 
-    res.status(200).json(posts);
+    // Fetch vote counts for each post
+    const postsWithVotes = await Promise.all(posts.map(async post => {
+      const results = await Vote.aggregate([
+        { $match: { post: post._id } },
+        {
+          $group: {
+            _id: "$type",
+            count: { $sum: 1 }
+          }
+        }
+      ]);
+
+      const voteCounts = { upvotes: 0, downvotes: 0 };
+      results.forEach(result => {
+        if (result._id === 'upvote') {
+          voteCounts.upvotes = result.count;
+        } else if (result._id === 'downvote') {
+          voteCounts.downvotes = result.count;
+        }
+      });
+
+      return {
+        ...post.toObject(),
+        voteCounts
+      };
+    }));
+
+    res.status(200).json(postsWithVotes);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
