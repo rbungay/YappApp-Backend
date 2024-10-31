@@ -17,8 +17,16 @@ import User from "./models/user.js";
 import dotenv from "dotenv";
 dotenv.config();
 
+//Websocket implementation
+import http from "http";
+import { Server } from "socket.io";
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+const server = http.createServer(app);
+const io = new Server(server);
+export { io };
 
 passport.use(
   new GoogleStrategy(
@@ -78,7 +86,16 @@ db.on("connected", () => {
   console.clear();
   console.log(chalk.blue("Connected to MongoDB!"));
 
-  app.listen(PORT, () => {
+  // Websocket listener
+  io.on("connection", (socket) => {
+    console.log(`A user connected: ${socket.id}`);
+
+    socket.on("disconnect", () => {
+      console.log(`User disconnected: ${socket.id}`);
+    });
+  });
+
+  server.listen(PORT, () => {
     console.log(`Express server running on port: ${PORT}`);
   });
 });

@@ -1,6 +1,7 @@
 import Post from "../models/post.js";
 import Comment from "../models/comment.js";
-import Vote from "../models/vote.js"
+import Vote from "../models/vote.js";
+import { io } from "../server.js";
 
 // export const getPosts = async (req, res) => {
 //   try {
@@ -39,31 +40,33 @@ export const getPosts = async (req, res) => {
     }
 
     // Fetch vote counts for each post
-    const postsWithVotes = await Promise.all(posts.map(async post => {
-      const results = await Vote.aggregate([
-        { $match: { post: post._id } },
-        {
-          $group: {
-            _id: "$type",
-            count: { $sum: 1 }
+    const postsWithVotes = await Promise.all(
+      posts.map(async (post) => {
+        const results = await Vote.aggregate([
+          { $match: { post: post._id } },
+          {
+            $group: {
+              _id: "$type",
+              count: { $sum: 1 },
+            },
+          },
+        ]);
+
+        const voteCounts = { upvotes: 0, downvotes: 0 };
+        results.forEach((result) => {
+          if (result._id === "upvote") {
+            voteCounts.upvotes = result.count;
+          } else if (result._id === "downvote") {
+            voteCounts.downvotes = result.count;
           }
-        }
-      ]);
+        });
 
-      const voteCounts = { upvotes: 0, downvotes: 0 };
-      results.forEach(result => {
-        if (result._id === 'upvote') {
-          voteCounts.upvotes = result.count;
-        } else if (result._id === 'downvote') {
-          voteCounts.downvotes = result.count;
-        }
-      });
-
-      return {
-        ...post.toObject(),
-        voteCounts
-      };
-    }));
+        return {
+          ...post.toObject(),
+          voteCounts,
+        };
+      })
+    );
 
     res.status(200).json(postsWithVotes);
   } catch (error) {
@@ -87,34 +90,7 @@ export const getPostsByPrompt = async (req, res) => {
         .json({ message: "No posts found for this prompt." });
     }
 
-    // Fetch vote counts for each post
-    const postsWithVotes = await Promise.all(posts.map(async post => {
-      const results = await Vote.aggregate([
-        { $match: { post: post._id } },
-        {
-          $group: {
-            _id: "$type",
-            count: { $sum: 1 }
-          }
-        }
-      ]);
-
-      const voteCounts = { upvotes: 0, downvotes: 0 };
-      results.forEach(result => {
-        if (result._id === 'upvote') {
-          voteCounts.upvotes = result.count;
-        } else if (result._id === 'downvote') {
-          voteCounts.downvotes = result.count;
-        }
-      });
-
-      return {
-        ...post.toObject(),
-        voteCounts
-      };
-    }));
-
-    res.status(200).json(postsWithVotes);
+    (200).json(postsWithVotes);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -139,23 +115,23 @@ export const getPostById = async (req, res) => {
       {
         $group: {
           _id: "$type",
-          count: { $sum: 1 }
-        }
-      }
+          count: { $sum: 1 },
+        },
+      },
     ]);
 
     const voteCounts = { upvotes: 0, downvotes: 0 };
-    results.forEach(result => {
-      if (result._id === 'upvote') {
+    results.forEach((result) => {
+      if (result._id === "upvote") {
         voteCounts.upvotes = result.count;
-      } else if (result._id === 'downvote') {
+      } else if (result._id === "downvote") {
         voteCounts.downvotes = result.count;
       }
     });
 
     res.status(200).json({
       ...post.toObject(),
-      voteCounts
+      voteCounts,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -167,6 +143,7 @@ export const createPost = async (req, res) => {
   try {
     const newPost = new Post({ owner, prompt, text });
     await newPost.save();
+    io.emit("update-posts", newPost);
     res.status(201).json(newPost);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -185,6 +162,7 @@ export const updatePost = async (req, res) => {
     if (!updatedPost) {
       return res.status(404).json({ message: "Post not found" });
     }
+    io.emit("update-posts", updatedPost);
     res.status(200).json(updatedPost);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -200,6 +178,7 @@ export const deletePost = async (req, res) => {
     if (!deletedPost) {
       return res.status(404).json({ message: "Post not found" });
     }
+    io.emit("delete-post", req.params.postId);
     res.status(204).send(); // No content to return
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -208,8 +187,8 @@ export const deletePost = async (req, res) => {
 
 export const castVote = async (req, res) => {
   const { voteType } = req.body;
-  const { _id: userId} = req.user
-  const { postId } = req.params
+  const { _id: userId } = req.user;
+  const { postId } = req.params;
 
   try {
     let vote = await Vote.findOne({ post: postId, user: userId });
@@ -223,20 +202,20 @@ export const castVote = async (req, res) => {
     }
 
     await vote.save();
-    res.status(200).json({ message: 'Vote registered successfully' });
+    res.status(200).json({ message: "Vote registered successfully" });
   } catch (error) {
-    res.status(500).json({ message: 'Error processing vote' });
+    res.status(500).json({ message: "Error processing vote" });
   }
 };
 
 export const getVote = async (req, res) => {
-  const { postId } = req.params
-  const { _id: userId} = req.user
+  const { postId } = req.params;
+  const { _id: userId } = req.user;
 
   try {
     let vote = await Vote.findOne({ post: postId, user: userId });
     res.status(200).json(vote);
   } catch (error) {
-    res.status(500).json({ message: 'Error accessing vote' });
+    res.status(500).json({ message: "Error accessing vote" });
   }
-}
+};
