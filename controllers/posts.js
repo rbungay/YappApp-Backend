@@ -1,6 +1,7 @@
 import Post from "../models/post.js";
 import Comment from "../models/comment.js";
 import Vote from "../models/vote.js";
+import { io } from "../server.js";
 
 // export const getPosts = async (req, res) => {
 //   try {
@@ -142,7 +143,7 @@ export const createPost = async (req, res) => {
   try {
     const newPost = new Post({ owner, prompt, text });
     await newPost.save();
-
+    io.emit("update-posts", newPost);
     res.status(201).json(newPost);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -177,7 +178,7 @@ export const deletePost = async (req, res) => {
     if (!deletedPost) {
       return res.status(404).json({ message: "Post not found" });
     }
-
+    io.emit("delete-post", req.params.postId);
     res.status(204).send(); // No content to return
   } catch (error) {
     res.status(500).json({ error: error.message });
