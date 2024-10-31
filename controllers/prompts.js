@@ -52,8 +52,6 @@ export const getPreviousPrompts = async (req, res) => {
       return res.status(404).json({ message: "No previous prompts found" });
     }
 
-    console.log("hhhhhhhhhhhh");
-
     res.json(previousPrompts);
   } catch (error) {
     res.status(500).json({ error: error.message });

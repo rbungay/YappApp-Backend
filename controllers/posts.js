@@ -163,7 +163,6 @@ export const getPostById = async (req, res) => {
       path: "owner",
       select: "username _id",
     }); // Select only username for comment owner
-    console.log("Comments: ", comments);
 
     res.status(200).json({
       ...post.toObject(),
