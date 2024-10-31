@@ -14,6 +14,10 @@ const promptSchema = new Schema({
   category: {
     type: String,
   },
+  isHot: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 export default mongoose.model("Prompt", promptSchema);
