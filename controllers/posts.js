@@ -90,7 +90,7 @@ export const getPostsByPrompt = async (req, res) => {
         .json({ message: "No posts found for this prompt." });
     }
 
-    (200).json(postsWithVotes);
+    res.status(200).json(posts);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

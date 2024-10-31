@@ -86,7 +86,6 @@ db.on("connected", () => {
   console.clear();
   console.log(chalk.blue("Connected to MongoDB!"));
 
-  // Websocket listener
   io.on("connection", (socket) => {
     console.log(`A user connected: ${socket.id}`);
 
