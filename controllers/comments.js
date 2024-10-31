@@ -31,12 +31,13 @@ export const getCommentsById = async (req, res) => {
 };
 
 export const createComment = async (req, res) => {
-  const { owner, post, text } = req.body;
+  const { owner, postId, text } = req.body;
   try {
-    const newComment = new Comment({ owner, post, text });
-    await newComment.save();
+    const newComment = new Comment({ owner, postId, text });
+    const savedComment = await newComment.save();
+    const populatedComment = await savedComment.populate("owner");
     io.emit("update-comments", newComment);
-    res.status(201).json(newComment);
+    res.status(201).json(populatedComment);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
