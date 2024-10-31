@@ -14,12 +14,12 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import jwt from "jsonwebtoken";
 import User from "./models/user.js";
 
-import dotenv from "dotenv";
-dotenv.config();
-
 //Websocket implementation
 import http from "http";
 import { Server } from "socket.io";
+
+import dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -86,7 +86,6 @@ db.on("connected", () => {
   console.clear();
   console.log(chalk.blue("Connected to MongoDB!"));
 
-  // Websocket listener
   io.on("connection", (socket) => {
     console.log(`A user connected: ${socket.id}`);
 
