@@ -162,7 +162,7 @@ export const updatePost = async (req, res) => {
     if (!updatedPost) {
       return res.status(404).json({ message: "Post not found" });
     }
-
+    io.emit("update-posts", updatedPost);
     res.status(200).json(updatedPost);
   } catch (error) {
     res.status(500).json({ error: error.message });
