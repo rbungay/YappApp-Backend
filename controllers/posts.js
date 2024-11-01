@@ -27,13 +27,11 @@ import { io } from "../server.js";
 
 export const getPosts = async (req, res) => {
   try {
-    const posts = await Post.find({})
-      .populate("owner")
-      .populate("prompt")
-      // .populate({
-      //   path: "comments",
-      //   populate: { path: "owner", select: "username" },
-      // });
+    const posts = await Post.find({}).populate("owner").populate("prompt");
+    // .populate({
+    //   path: "comments",
+    //   populate: { path: "owner", select: "username" },
+    // });
 
     if (!posts.length) {
       return res.status(404).json({ message: "No posts at the moment" });
@@ -129,10 +127,12 @@ export const getPostsByPrompt = async (req, res) => {
 
 export const getPostById = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.postId).populate({
-      path: "owner",
-      select: "username _id",
-    }); // Populate full owner data for the post if needed
+    const post = await Post.findById(req.params.postId)
+      .populate({
+        path: "owner",
+        select: "username _id",
+      })
+      .populate("prompt"); // Populate full owner data for the post if needed
 
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
@@ -163,7 +163,7 @@ export const getPostById = async (req, res) => {
       path: "owner",
       select: "username _id",
     }); // Select only username for comment owner
-    console.log("Comments: ", comments)
+    console.log("Comments: ", comments);
 
     res.status(200).json({
       ...post.toObject(),
