@@ -6,5 +6,6 @@ const router = Router();
 
 router.get("/:userId", verifyToken, controllers.getUserProfile);
 router.patch("/:userId/username", verifyToken, controllers.updateUserName);
+router.patch("/:userId", verifyToken, controllers.updateProfile);
 
 export default router;
