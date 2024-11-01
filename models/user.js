@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -19,12 +20,11 @@ const userSchema = new mongoose.Schema({
     unique: true,
     sparse: true,
   },
-  googleId: {
-    type: String,
-    unique: true,
-    sparse: true,
+  avatar: {
+    type: Number,
+    default: 0,
   },
-  githubId: {
+  googleId: {
     type: String,
     unique: true,
     sparse: true,

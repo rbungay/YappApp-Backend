@@ -41,7 +41,7 @@ router.post("/google/callback", async (req, res) => {
 
     // Create a JWT token for your application
     const jwtToken = jwt.sign(
-      { id: user.id, email: user.email },
+      { _id: user.id, email: user.email, username: user.username },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );

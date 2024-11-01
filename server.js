@@ -14,11 +14,20 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import jwt from "jsonwebtoken";
 import User from "./models/user.js";
 
+
 import dotenv from "dotenv";
 dotenv.config();
 
+//Websocket implementation
+import http from "http";
+import { Server } from "socket.io";
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+const server = http.createServer(app);
+const io = new Server(server);
+export { io };
 
 passport.use(
   new GoogleStrategy(
@@ -62,6 +71,8 @@ app.use(
   cors({
     origin: "http://localhost:5173",
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
   })
 );
 app.use(express.json());
@@ -73,12 +84,21 @@ app.use("/posts", postsRouter);
 app.use("/comments", commentsRouter);
 app.use("/auth", authsRouter);
 app.use("/prompts", promptsRouter);
+app.use('/api/users', profilesRouter)
 
 db.on("connected", () => {
   console.clear();
   console.log(chalk.blue("Connected to MongoDB!"));
 
-  app.listen(PORT, () => {
+  io.on("connection", (socket) => {
+    console.log(`A user connected: ${socket.id}`);
+
+    socket.on("disconnect", () => {
+      console.log(`User disconnected: ${socket.id}`);
+    });
+  });
+
+  server.listen(PORT, () => {
     console.log(`Express server running on port: ${PORT}`);
   });
 });

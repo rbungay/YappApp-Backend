@@ -1,4 +1,5 @@
 import Comment from "../models/comment.js";
+import { io } from "../server.js";
 
 export const getComments = async (req, res) => {
   try {
@@ -30,11 +31,13 @@ export const getCommentsById = async (req, res) => {
 };
 
 export const createComment = async (req, res) => {
-  const { owner, post, text } = req.body;
+  const { owner, postId, text } = req.body;
   try {
-    const newComment = new Comment({ owner, post, text });
-    await newComment.save();
-    res.status(201).json(newComment);
+    const newComment = new Comment({ owner, postId, text });
+    const savedComment = await newComment.save();
+    const populatedComment = await savedComment.populate("owner");
+    io.emit("update-comments", newComment);
+    res.status(201).json(populatedComment);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -50,6 +53,7 @@ export const updateComment = async (req, res) => {
     if (!updatedComment) {
       return res.status(404).json({ message: "Comment not found" });
     }
+    io.emit("update-comments", updatedComment);
     res.status(200).json(updatedComment);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -64,6 +68,7 @@ export const deleteComment = async (req, res) => {
     if (!deletedComment) {
       return res.status(404).json({ message: "Comment not found" });
     }
+    io.emit("delete-comment", req.params.commentId);
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ error: error.message });
