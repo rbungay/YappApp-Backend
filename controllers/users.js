@@ -3,7 +3,6 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 
-const router = express.Router();
 const SALT_LENGTH = 12;
 
 export const signUp = async (req, res) => {

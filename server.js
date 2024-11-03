@@ -84,7 +84,6 @@ app.use("/posts", postsRouter);
 app.use("/comments", commentsRouter);
 app.use("/auth", authsRouter);
 app.use("/prompts", promptsRouter);
-app.use('/api/users', profilesRouter)
 
 db.on("connected", () => {
   console.clear();
