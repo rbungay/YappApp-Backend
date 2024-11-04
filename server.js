@@ -68,7 +68,7 @@ passport.use(
 app.use(passport.initialize());
 app.use(
   cors({
-    origin: "https://regal-babka-f40978.netlify.app",
+    origin: "https://yappapp.netlify.app",
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
